@@ -1,4 +1,4 @@
-const nanoid = require('nanoid');
+const {nanoid} = require('nanoid');
 const books = require('./books');
 
 
@@ -35,7 +35,7 @@ const addBookHandler = (request, h) => {
 
   books.push(newBook);
 
-  if (name === '') {
+  if (!name) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal menambahkan buku. Mohon isi nama buku',
@@ -69,25 +69,31 @@ const addBookHandler = (request, h) => {
   }
 };
 
-const getAllBooksHandler=() => ({
+const getAllBooksHandler=(request, h) => ({
   status: 'success',
   data: {
-    books,
+    books: books.map((book)=> ({
+      id: book.id,
+      name: book.name,
+      publisher: book.publisher,
+    })),
   },
 });
 
 const getBookByIdHandler=(request, h)=>{
   const {id}=request.params;
 
-  const book=books.filter((n)=>n.id===id)[0];
+  const book=books.filter((b)=>b.id===id)[0];
 
   if (book!==undefined) {
-    return {
+    const response=h.response({
       status: 'success',
       data: {
-        books,
+        book,
       },
-    };
+    });
+    response.code(200);
+    return response;
   }
 
   const response=h.response({
@@ -109,7 +115,7 @@ const editBookByIdHandler=(request, h)=>{
 
   const index=books.findIndex((book)=>book.id===id);
 
-  if (name==='') {
+  if (!name) {
     const response=h.response({
       status: 'fail',
       message: 'Gagal memperbarui buku. Mohon isi nama buku',
